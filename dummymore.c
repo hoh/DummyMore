@@ -48,6 +48,16 @@
 
 #include <string.h> // for strncmp
 
+// for named pipe:
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+// named pipe variables:
+int fd;
+char * myfifo = "/tmp/dummymore.log";
+
 /* we're adding this here and assigning it in plugin_load because we need
  * a valid plugin handle for our call to purple_notify_message() in the
  * plugin_action_test_cb() callback function */
@@ -73,7 +83,7 @@ static gboolean
 receiving_im_msg_cb(
     PurpleAccount * account,
     char **sender,
-    char **buffer,
+    char **message,
     PurpleConversation * conv,
     PurpleMessageFlags * flags,
     void *data)
@@ -82,17 +92,28 @@ receiving_im_msg_cb(
                 "Called receiving_im_msg_cb.\n");
 
     printf("-------\n");
-    //printf(g_strdup(*buffer));
+    //printf(g_strdup(*message));
     printf("\n<-------\n");
 
+    // --- Writing received message to FIFO:
 
-    if (strncmp(*buffer, "?OTR:", 3) == 0)
+    char time_str[80];
+    sprintf(time_str, "%d ", time(NULL));
+
+    write(fd, "RECV ", sizeof("RECV "));
+    write(fd, time_str, strlen(time_str));
+    write(fd, *message, strlen(*message));
+    write(fd, "\n", sizeof("\n"));
+
+    // ---
+
+    if (strncmp(*message, "?OTR:", 3) == 0)
         printf("This shouldn't be OTR-encrypted.\n");
     else
         printf("This looks unencrypted.\n");
 
-    if ((strncmp(*buffer, "?DUMMY:", 7) == 0) ||
-	(strncmp(*buffer, "<FONT>?DUMMY:", 13) == 0))
+    if ((strncmp(*message, "?DUMMY:", 7) == 0) ||
+	(strncmp(*message, "<FONT>?DUMMY:", 13) == 0))
     {
         printf("This is a dummy message..\n");
         return TRUE;              /* returning TRUE will block the IM */
@@ -101,6 +122,45 @@ receiving_im_msg_cb(
         printf("This looks like a real message.\n");
         return FALSE;              /* returning TRUE will block the IM */
     }
+}
+
+static void
+sending_im_msg_cb (
+    PurpleAccount *account,
+    const char *receiver,
+    char **message)
+{
+    // --- Writing received message to FIFO:
+
+    char time_str[80];
+    sprintf(time_str, "%d ", time(NULL));
+
+    write(fd, "SEND ", sizeof("SEND "));
+    write(fd, time_str, strlen(time_str));
+    write(fd, *message, strlen(*message));
+    write(fd, "\n", sizeof("\n"));
+
+    // ---
+}
+
+static void
+sent_im_msg_cb (
+    PurpleAccount *account, 
+    const char *receiver,
+    const char *message)
+{
+    // --- Writing received message to FIFO:
+
+    char time_str[80];
+    sprintf(time_str, "%d ", time(NULL));
+
+    write(fd, "SENT ", sizeof("SENT "));
+    write(fd, time_str, strlen(time_str));
+    write(fd, message, strlen(message));
+    write(fd, "\n", sizeof("\n"));
+
+    // ---
+
 }
 
 static gboolean
@@ -114,7 +174,19 @@ writing_im_msg_cb(
     purple_debug_info("core-hoh-dummymore",
                 "Called writing_im_msg_cb.\n");
 
-    if (strncmp(*message, "?DUMMY:", 7) == 0)
+    // --- Writing received message to FIFO:
+
+    char time_str[80];
+    sprintf(time_str, "%d ", time(NULL));
+
+    write(fd, "WRIT ", sizeof("WRIT "));
+    write(fd, time_str, strlen(time_str));
+    write(fd, *message, strlen(*message));
+    write(fd, "\n", sizeof("\n"));
+
+    // ---
+    if ((strncmp(*message, "?DUMMY:", 7) == 0) ||
+	(strncmp(*message, "<FONT>?DUMMY:", 13) == 0))
         return TRUE;
     else
         return FALSE;
@@ -152,12 +224,35 @@ plugin_load (PurplePlugin * plugin)
         "Welcome to the DummyMore plugin ! Make sure the OTR plugin is loaded after me.", NULL, NULL,
         NULL);
 
+    /* create the FIFO (named pipe) */
+    mkfifo(myfifo, 0666);
+    /* write "Hi" to the FIFO */
+    fd = open(myfifo, O_WRONLY);
+    write(fd, "Hi\n", sizeof("Hi\n"));
+
+    /*
     purple_signal_connect(
                 purple_conversations_get_handle(),
                 "receiving-im-msg",
                 plugin,
                 PURPLE_CALLBACK(receiving_im_msg_cb),
                 NULL);
+
+    purple_signal_connect(
+                purple_conversations_get_handle(),
+                "sending-im-msg",
+                plugin,
+                PURPLE_CALLBACK(sending_im_msg_cb),
+                NULL);
+
+    purple_signal_connect(
+                purple_conversations_get_handle(),
+                "sent-im-msg",
+                plugin,
+                PURPLE_CALLBACK(sent_im_msg_cb),
+                NULL);
+    */
+
 
     purple_signal_connect(
                 purple_conversations_get_handle(),
@@ -168,6 +263,13 @@ plugin_load (PurplePlugin * plugin)
 
     helloworld_plugin = plugin; /* assign this here so we have a valid handle later */
 
+    return TRUE;
+}
+
+static gboolean
+plugin_unload (PurplePlugin *plugin)
+{
+    close(fd);
     return TRUE;
 }
 
@@ -196,7 +298,7 @@ static PurplePluginInfo info = {
 
 
     plugin_load,
-    NULL,
+    plugin_unload,
     NULL,
 
     NULL,
