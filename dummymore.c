@@ -82,7 +82,7 @@ receiving_im_msg_cb(
                 "Called receiving_im_msg_cb.\n");
 
     printf("-------\n");
-    printf(g_strdup(*buffer));
+    //printf(g_strdup(*buffer));
     printf("\n<-------\n");
 
 
@@ -91,7 +91,9 @@ receiving_im_msg_cb(
     else
         printf("This looks unencrypted.\n");
 
-    if (strncmp(*buffer, "?DUMMY:", 7) == 0) {
+    if ((strncmp(*buffer, "?DUMMY:", 7) == 0) ||
+	(strncmp(*buffer, "<FONT>?DUMMY:", 13) == 0))
+    {
         printf("This is a dummy message..\n");
         return TRUE;              /* returning TRUE will block the IM */
     }
