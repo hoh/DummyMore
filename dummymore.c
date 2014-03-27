@@ -92,7 +92,7 @@ receiving_im_msg_cb(
                 "Called receiving_im_msg_cb.\n");
 
     printf("-------\n");
-    //printf(g_strdup(*message));
+    g_strdup_printf("MSG %s", *message);
     printf("\n<-------\n");
 
     // --- Writing received message to FIFO:
