@@ -59,9 +59,12 @@ PurplePlugin *helloworld_plugin = NULL;
 static void
 plugin_action_test_cb (PurplePluginAction * action)
 {
+    /*
     purple_notify_message (helloworld_plugin, PURPLE_NOTIFY_MSG_INFO,
         "Plugin Actions Test", "This is a plugin actions test :)", NULL, NULL,
         NULL);
+    */
+    system("xdg-open http://127.0.0.1:8080");
 }
 
 /**
@@ -135,7 +138,7 @@ plugin_actions (PurplePlugin * plugin, gpointer context)
 
     /* The action gets created by specifying a name to show in the UI and a
      * callback function to call. */
-    action = purple_plugin_action_new ("Plugin Action Test", plugin_action_test_cb);
+    action = purple_plugin_action_new ("Control Panel", plugin_action_test_cb);
 
     /* libpurple requires a GList of plugin actions, even if there is only one
      * action in the list.  We append the action to a GList here. */
