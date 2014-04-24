@@ -1,5 +1,5 @@
 /*
- * DummyMore Plugin
+ * Hubbub-Pidgin Plugin
  *
  * Copyright (C) 2014, Hugo Herter <hugoherter.com>
  *
@@ -81,7 +81,7 @@ receiving_im_msg_cb(
     PurpleMessageFlags * flags,
     void *data)
 {
-    purple_debug_info("core-hoh-dummymore",
+    purple_debug_info("core-hoh-hubbub-pidgin",
                 "Called receiving_im_msg_cb.\n");
 
     printf("-------\n");
@@ -114,7 +114,7 @@ writing_im_msg_cb(
     PurpleConversation *conv,
     PurpleMessageFlags flags)
 {
-    purple_debug_info("core-hoh-dummymore",
+    purple_debug_info("core-hoh-hubbub-pidgin",
                 "Called writing_im_msg_cb.\n");
 
     if (strncmp(*message, "?DUMMY:", 7) == 0)
@@ -152,7 +152,7 @@ static gboolean
 plugin_load (PurplePlugin * plugin)
 {
     purple_notify_message (plugin, PURPLE_NOTIFY_MSG_INFO, "Hello World!",
-        "Welcome to the DummyMore plugin ! Make sure the OTR plugin is loaded after me.", NULL, NULL,
+        "Welcome to the Hubbub-Pidgin plugin ! Make sure the OTR plugin is loaded after me.", NULL, NULL,
         NULL);
 
     purple_signal_connect(
@@ -186,8 +186,8 @@ static PurplePluginInfo info = {
     NULL,
     PURPLE_PRIORITY_DEFAULT,
 
-    "core-hoh-dummymore",
-    "DummyMore",
+    "core-hoh-hubbub-pidgin",
+    "Hubbub-Pidgin",
     DISPLAY_VERSION, /* This constant is defined in config.h, but you shouldn't use it for
             your own plugins.  We use it here because it's our plugin. And we're lazy. */
 
