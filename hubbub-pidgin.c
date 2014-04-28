@@ -187,7 +187,7 @@ static PurplePluginInfo info = {
     PURPLE_PRIORITY_DEFAULT,
 
     "core-hoh-hubbub-pidgin",
-    "Hubbub-Pidgin",
+    "Hubbub",
     DISPLAY_VERSION, /* This constant is defined in config.h, but you shouldn't use it for
             your own plugins.  We use it here because it's our plugin. And we're lazy. */
 
