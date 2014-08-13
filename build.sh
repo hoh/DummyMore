@@ -8,4 +8,5 @@ make
 cd libpurple/plugins/
 make hubbub-pidgin.so
 cd ../../..
-cp pidgin-2.10.9/libpurple/plugins/hubbub-pidgin.so ./
+cp pidgin-2.10.9/libpurple/plugins/hubbub-pidgin.so ./hubbub-pidgin_`uname -m`.so
+
